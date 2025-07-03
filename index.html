@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tiempo al Revés</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e3f2fd;
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1565c0;
+    }
+
+    .pregunta {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .pregunta p {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .botones button {
+      margin-right: 10px;
+      padding: 5px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .si { background-color: #4caf50; color: white; }
+    .no { background-color: #f44336; color: white; }
+
+    .recomendacion {
+      margin-top: 10px;
+      background: #fff9c4;
+      padding: 10px;
+      border-left: 4px solid #fbc02d;
+      border-radius: 5px;
+      font-size: 0.95em;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 1.2em;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+  <h1>⏳ Tiempo al Revés</h1>
+
+  <div id="preguntas-container"></div>
+
+  <div style="text-align:center; margin-top: 20px;">
+    <button onclick="mostrarResultado()" style="padding: 10px 20px; background:#1976d2; color:white; border:none; border-radius: 5px;">
+      Finalizar Día
+    </button>
+  </div>
+
+  <div id="resultado"></div>
+
+  <script>
+    const actividades = [
+      {
+        id: "caminar",
+        pregunta: "¿Fuiste a caminar hoy?",
+        minutos: 10,
+        recomendacion: "Salir a caminar mejora tu energía y tu ánimo. ¡Probalo aunque sea 10 minutos!"
+      },
+      {
+        id: "leer",
+        pregunta: "¿Leíste algo que te gustó?",
+        minutos: 20,
+        recomendacion: "Leer un par de páginas de algo que te interese puede ayudarte a desconectar."
+      },
+      {
+        id: "crear",
+        pregunta: "¿Hiciste algo creativo?",
+        minutos: 25,
+        recomendacion: "Dibujar, escribir, cocinar algo nuevo... ¡todo eso cuenta como crear!"
+      },
+      {
+        id: "meditar",
+        pregunta: "¿Tuviste un momento de calma o reflexión?",
+        minutos: 15,
+        recomendacion: "Podés cerrar los ojos y respirar profundo 3 minutos. Ya es un buen comienzo."
+      },
+      {
+        id: "charlar",
+        pregunta: "¿Charlaste con alguien sin usar pantallas?",
+        minutos: 20,
+        recomendacion: "Una charla real, sin pantallas, puede mejorar mucho tu ánimo."
+      }
+    ];
+
+    const respuestas = {};
+
+    const contenedor = document.getElementById("preguntas-container");
+
+    actividades.forEach(act => {
+      const div = document.createElement("div");
+      div.className = "pregunta";
+      div.id = `pregunta-${act.id}`;
+      div.innerHTML = `
+        <p>${act.pregunta}</p>
+        <div class="botones">
+          <button class="si" onclick="responder('${act.id}', true, this)">Sí</button>
+          <button class="no" onclick="responder('${act.id}', false, this)">No</button>
+        </div>
+        <div class="recomendacion" id="reco-${act.id}" style="display:none;"></div>
+      `;
+      contenedor.appendChild(div);
+    });
+
+    function responder(id, valor, boton) {
+      if (respuestas[id] !== undefined) return; // ya respondida
+
+      respuestas[id] = valor;
+
+      const grupoBotones = boton.parentElement;
+      Array.from(grupoBotones.children).forEach(b => {
+        b.disabled = true;
+        if ((b.textContent === "Sí" && valor) || (b.textContent === "No" && !valor)) {
+          b.style.border = "2px solid black";
+        }
+      });
+
+      if (!valor) {
+        const reco = document.getElementById(`reco-${id}`);
+        const act = actividades.find(a => a.id === id);
+        reco.innerText = `💡 ${act.recomendacion}`;
+        reco.style.display = "block";
+      }
+    }
+
+    function mostrarResultado() {
+      if (Object.keys(respuestas).length < actividades.length) {
+        alert("Por favor respondé todas las preguntas.");
+        return;
+      }
+
+      let total = 0;
+      actividades.forEach(act => {
+        if (respuestas[act.id]) total += act.minutos;
+      });
+
+      let nivel = "";
+      let emoji = "";
+      let mensaje = "";
+
+      if (total === 0) {
+        nivel = "Observador del Día";
+        emoji = "💤";
+        mensaje = "Hoy no lograste sumar minutos, ¡pero cada día es una nueva oportunidad! Intentá mañana hacer aunque sea una pequeña actividad positiva.";
+      } else if (total < 60) {
+        nivel = "Novato del Tiempo";
+        emoji = "🌱";
+        mensaje = "Vas empezando, y eso ya es valioso. Sumá pequeños hábitos diarios: caminar 10 minutos o leer 5 páginas ya suma.";
+      } else if (total < 100) {
+        nivel = "Explorador del Tiempo";
+        emoji = "🧭";
+        mensaje = "¡Muy bien! Estás encontrando actividades que te hacen bien. Podés intentar mantener una rutina saludable con momentos de calma.";
+      } else {
+        nivel = "Maestro del Tiempo";
+        emoji = "🕰️";
+        mensaje = "¡Increíble! Estás usando tu tiempo de manera muy positiva. Compartí esta energía con los demás, sos un gran ejemplo.";
+      }
+
+      document.getElementById("resultado").innerHTML = `
+        <p>Ganaste <strong>${total}</strong> minutos significativos hoy.</p>
+        <p>Tu nivel: <strong>${nivel}</strong> ${emoji}</p>
+        <div style="margin-top:15px; background:#e8f5e9; padding:15px; border-left:4px solid #66bb6a; border-radius:6px;">
+          <strong>Consejo:</strong><br>${mensaje}
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
+
+
